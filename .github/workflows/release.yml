@@ -1,11 +1,9 @@
-name: Deploy to Amazon ECS
+name: Deploy to Amazon ECR
 
 on:
   push:
-    branches: [ "master" ]
-
-env:
-
+    branches-ignore:
+      - master
 
 permissions:
   contents: read
