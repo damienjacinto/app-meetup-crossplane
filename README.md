@@ -1,4 +1,4 @@
-[![Release](https://github.com/damienjacinto/app-meetup-crossplane/actions/workflows/release.yml/badge.svg)](https://github.com/damienjacinto/app-meetup-crossplane/actions/workflows/release.yml)
+[![Release](https://github.com/damienjacinto/app-meetup-crossplane/actions/workflows/release.yml/badge.svg?branch=master&event=release)](https://github.com/damienjacinto/app-meetup-crossplane/actions/workflows/release.yml)
 
 # app-meetup-crossplane
 

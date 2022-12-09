@@ -29,6 +29,20 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --show-source --statistics --ignore=E501 --max-complexity=10
+
+    - name: Test pytest
+      run: |
+        pytest
+
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
