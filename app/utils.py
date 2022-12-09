@@ -4,4 +4,3 @@ def greyOutDate(greyed_date, messages):
             if message['number'] == date.date:
                 message["opened"] = "greyImg"
     return messages
-

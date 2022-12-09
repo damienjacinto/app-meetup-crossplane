@@ -1,6 +1,7 @@
 from utils import greyOutDate
 from date_calendar import DateCalender
 
+
 def test_greyOutDate():
     messages = [
         {
@@ -30,4 +31,3 @@ def test_greyOutDate():
     greyed_date = [DateCalender(1)]
     values = greyOutDate(greyed_date, messages)
     assert expected_messages == values
-
