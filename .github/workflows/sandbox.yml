@@ -39,6 +39,9 @@ jobs:
       run: |
         flake8 . --count --show-source --statistics --ignore=E501 --max-complexity=10
 
+    - name: Test pytest
+        pytest
+
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:

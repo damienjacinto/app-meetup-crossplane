@@ -3,6 +3,7 @@ from flask import Flask, request, render_template
 import json
 from date_calendar import DateCalender
 from database import db
+from utils import greyOutDate
 
 app = Flask(__name__,
             static_url_path='',
@@ -20,17 +21,13 @@ if database_enable:
 f = open('./app/data.json')
 data = json.load(f)
 
-
 @app.route("/")
 def index():
     title = "Calendrier de l'avent 2019"
 
     if database_enable:
         res = db.session.query(DateCalender).all()
-        for message in data['messages']:
-            for dateopened in res:
-                if message['number'] == dateopened.date:
-                    message["opened"] = "greyImg"
+        messages = utils.greyOutDate(res, data['messages'])
     return render_template('index.html', messages=data['messages'], title=title)
 
 
