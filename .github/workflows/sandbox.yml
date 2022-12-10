@@ -5,9 +5,6 @@ on:
     branches-ignore:
       - master
 
-permissions:
-  contents: read
-
 jobs:
   deploy:
     name: Deploy
@@ -17,6 +14,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+      id: extract_branch
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -29,16 +31,64 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --show-source --statistics --ignore=E501 --max-complexity=10
+
+    - name: Test pytest
+      run: |
+        pytest
+
     - name: Build, tag, and push image to Amazon ECR
-      id: build-image
+      id: build_image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        PREVIEW: ${{ steps.extract_branch.outputs.branch }}
         IMAGE_TAG: ${{ github.sha }}
         ECR_REPOSITORY: ${{ github.event.repository.name }}
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$PREVIEW-${IMAGE_TAG::7}
+        docker build -t $IMG .
+        docker push $IMG
+        echo "sha=$(docker inspect --format='{{index .Id}}' $IMG | sed -e s/^sha256://)" >> $GITHUB_OUTPUT
+        echo "image=$IMG" >> $GITHUB_OUTPUT
+
+    - name: Checkout preview
+      uses: actions/checkout@master
+      with:
+        repository: damienjacinto/app-meetup-argocd
+        path: ./app-meetup-argocd
+        token: ${{ secrets.PAT }}
+
+    - name: Test existing preview
+      env:
+        PREVIEW: ${{ steps.extract_branch.outputs.branch }}
+        REPOSITORY: ${{ github.event.repository.name }}
+        SHA: ${{ steps.build_image.outputs.sha }}
+      run: |
+        if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]
+        then
+          mkdir -p ./app-meetup-argocd/bootstrap/previews
+          cat ./app-meetup-argocd/bootstrap/template.txt | envsubst > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+          echo "create=true" >> $GITHUB_OUTPUT
+        else
+          echo "create=false" >> $GITHUB_OUTPUT
+        fi
+      id: preview
+
+    - name: Create preview
+      if: steps.preview.outputs.create == 'true'
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: "Create preview env ${{ steps.extract_branch.outputs.branch }}"
+        cwd: "./app-meetup-argocd/"
+
