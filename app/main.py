@@ -18,17 +18,18 @@ if database_enable:
     with app.app_context():
         db.create_all()
 
-f = open('./app/data.json')
+path_data = os.environ.get('DATA_PATH', './app/data.json')
+f = open(path_data)
 data = json.load(f)
 
 
 @app.route("/")
 def index():
     title = "Calendrier de l'avent 2019"
-
+    messages = data['messages']
     if database_enable:
         res = db.session.query(DateCalender).all()
-        messages = greyOutDate(res, data['messages'])
+        messages = greyOutDate(res, messages)
     return render_template('index.html', messages=messages, title=title)
 
 
