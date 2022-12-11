@@ -17,7 +17,7 @@ jobs:
 
     - name: Extract branch name
       shell: bash
-      run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+      run: echo "branch=$(echo ${GITHUB_REF##*/})" >> $GITHUB_OUTPUT
       id: extract_branch
 
     - name: Configure AWS credentials
@@ -59,7 +59,7 @@ jobs:
         IMG=$ECR_REGISTRY/$ECR_REPOSITORY:$PREVIEW-${IMAGE_TAG::7}
         docker build -t $IMG .
         docker push $IMG
-        echo "sha=$(docker inspect --format='{{index .Id}}' $IMG | sed -e s/^sha256://)" >> $GITHUB_OUTPUT
+        echo "tag=$PREVIEW-${IMAGE_TAG::7}" >> $GITHUB_OUTPUT
         echo "image=$IMG" >> $GITHUB_OUTPUT
 
     - name: Checkout preview
@@ -73,7 +73,7 @@ jobs:
       env:
         PREVIEW: ${{ steps.extract_branch.outputs.branch }}
         REPOSITORY: ${{ github.event.repository.name }}
-        SHA: ${{ steps.build_image.outputs.sha }}
+        TAG: ${{ steps.build_image.outputs.tag }}
       run: |
         if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]
         then
