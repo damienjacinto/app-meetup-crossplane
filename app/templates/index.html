@@ -49,12 +49,14 @@
 
 <script>
 $("div[id^='image']").click(function(){
-    id=$(this).children('img').attr('id');
-    $.post( "/update", {date : id }, function( data ) {
-        console.log( "success" );
-    });
-    $("#m"+id).modal("show")
-    $(this).children('img').addClass('greyImg').removeAttr('data-toggle').removeAttr('data-target');
+    if (! $(this).children('img').hasClass('greyImg')) {
+        id=$(this).children('img').attr('id');
+        $.post( "/update", {date : id }, function( data ) {
+            console.log( "success" );
+        });
+        $("#m"+id).modal("show")
+        $(this).children('img').addClass('greyImg').removeAttr('data-toggle').removeAttr('data-target');
+    }
 });
 </script>
 </body>
