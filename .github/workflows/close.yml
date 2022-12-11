@@ -1,0 +1,42 @@
+name: Close Preview
+
+on:
+  pull_request:
+    types: [ closed ]
+
+jobs:
+  close_preview:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+      id: extract_branch
+
+    - name: Checkout preview
+      uses: actions/checkout@master
+      with:
+        repository: damienjacinto/app-meetup-argocd
+        path: ./app-meetup-argocd
+        token: ${{ secrets.PAT }}
+
+    - name: Test existing preview
+      env:
+        PREVIEW: ${{ steps.extract_branch.outputs.branch }}
+      run: |
+        if [ -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]
+        then
+          rm ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+          echo "delete=true" >> $GITHUB_OUTPUT
+        else
+          echo "delete=false" >> $GITHUB_OUTPUT
+        fi
+      id: preview
+
+    - name: Delete preview
+      if: steps.preview.outputs.delete == 'true'
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: "Delete preview env ${{ steps.extract_branch.outputs.branch }}"
+        cwd: "./app-meetup-argocd/"
+
