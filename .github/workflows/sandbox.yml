@@ -87,7 +87,9 @@ jobs:
           if [ -f ./config.yaml ]; then
             old=$(cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
             yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./change-date.yaml ./config.yaml > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
-            diff=$(diff -u ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml <(echo "$old"))
+            cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+            exit 1
+            //diff=$(diff -u ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml <(echo "$old"))
             if [ $diff-ne 0 ]; then
               echo "update=true" >> $GITHUB_OUTPUT
             else
