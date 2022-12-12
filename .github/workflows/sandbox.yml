@@ -89,9 +89,9 @@ jobs:
         if [ -f ./config.yaml ]; then
           echo "[INFO] Additionnal configuration detected"
           old=$(md5sum ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
-          cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+          echo "[INFO] New file generated"
           yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml
-          cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+          yq eval-all -i '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml
           new=$(md5sum ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
           if [ "$old" != "$new" ]; then
             echo "[INFO] Configuration updated"
