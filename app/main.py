@@ -33,7 +33,7 @@ data = json.load(f)
 
 @app.route("/")
 def index():
-    title = "Calendrier de l'avent 2021"
+    title = "Calendrier de l'avent 2022"
     messages = data['messages']
     if database_enable:
         res = db.session.query(DateCalender).all()
