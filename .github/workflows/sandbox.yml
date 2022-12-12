@@ -97,6 +97,7 @@ jobs:
             fi
           else
             echo "update=false" >> $GITHUB_OUTPUT
+          fi
         fi
 
     - name: Update preview
