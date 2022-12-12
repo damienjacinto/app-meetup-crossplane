@@ -15,6 +15,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Set up yq
+        uses: frenck/action-setup-yq@v1
+
     - name: Extract branch name
       shell: bash
       run: echo "branch=$(echo ${GITHUB_REF##*/})" >> $GITHUB_OUTPUT
@@ -70,25 +73,34 @@ jobs:
         token: ${{ secrets.PAT }}
 
     - name: Test existing preview
+      id: preview
       env:
         PREVIEW: ${{ steps.extract_branch.outputs.branch }}
         REPOSITORY: ${{ github.event.repository.name }}
         TAG: ${{ steps.build_image.outputs.tag }}
       run: |
-        if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]
-        then
+        if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]; then
           mkdir -p ./app-meetup-argocd/bootstrap/previews
           cat ./app-meetup-argocd/bootstrap/template.txt | envsubst > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
-          echo "create=true" >> $GITHUB_OUTPUT
+          echo "update=true" >> $GITHUB_OUTPUT
         else
-          echo "create=false" >> $GITHUB_OUTPUT
+          if [ -f ./config.yaml ]; then
+            old=$(cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
+            yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./change-date.yaml ./config.yaml > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+            diff=$(diff -u ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml <(echo "$old"))
+            if [ $diff-ne 0 ]; then
+              echo "update=true" >> $GITHUB_OUTPUT
+            else
+              echo "update=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "update=false" >> $GITHUB_OUTPUT
         fi
-      id: preview
 
-    - name: Create preview
-      if: steps.preview.outputs.create == 'true'
+    - name: Update preview
+      if: steps.preview.outputs.update == 'true'
       uses: EndBug/add-and-commit@v9
       with:
-        message: "Create preview env ${{ steps.extract_branch.outputs.branch }}"
+        message: "Update preview env ${{ steps.extract_branch.outputs.branch }}"
         cwd: "./app-meetup-argocd/"
 
