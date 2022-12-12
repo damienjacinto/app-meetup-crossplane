@@ -82,19 +82,15 @@ jobs:
         if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]; then
           mkdir -p ./app-meetup-argocd/bootstrap/previews
           cat ./app-meetup-argocd/bootstrap/template.txt | envsubst > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
+          echo "[INFO] Preview env created"
           echo "update=true" >> $GITHUB_OUTPUT
         else
           if [ -f ./config.yaml ]; then
+            echo "[INFO] Additionnal configuration detected"
             old=$(cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
             yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./change-date.yaml ./config.yaml > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
             cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
             exit 1
-            //diff=$(diff -u ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml <(echo "$old"))
-            if [ $diff -ne 0 ]; then
-              echo "update=true" >> $GITHUB_OUTPUT
-            else
-              echo "update=false" >> $GITHUB_OUTPUT
-            fi
           else
             echo "update=false" >> $GITHUB_OUTPUT
           fi
