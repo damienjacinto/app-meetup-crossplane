@@ -90,7 +90,7 @@ jobs:
             cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
             exit 1
             //diff=$(diff -u ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml <(echo "$old"))
-            if [ $diff-ne 0 ]; then
+            if [ $diff -ne 0 ]; then
               echo "update=true" >> $GITHUB_OUTPUT
             else
               echo "update=false" >> $GITHUB_OUTPUT
