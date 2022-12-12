@@ -23,7 +23,11 @@
         <div class="row">
             {% for message in messages %}
             <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 m-2" id="image-{{ message.number }}">
+                {% if message.opened != "" %}
+                <img id="{{ message.number }}" src={{ message.image }} class="img-fluid mx-auto d-block rounded w-95 {{ message.opened }}"/> </a>
+                {% else %}
                 <img data-toggle="modal" data-target="#m{{ message.number }}" id="{{ message.number }}" src={{ message.image }} class="img-fluid mx-auto d-block rounded w-95 {{ message.opened }}"/> </a>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
