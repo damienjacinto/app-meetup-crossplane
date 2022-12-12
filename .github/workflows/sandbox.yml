@@ -79,24 +79,37 @@ jobs:
         REPOSITORY: ${{ github.event.repository.name }}
         TAG: ${{ steps.build_image.outputs.tag }}
       run: |
-        echo "update=false" >> $GITHUB_OUTPUT
-        if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]; then
+        update=false
+        if [ ! -f ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ]
+        then
           mkdir -p ./app-meetup-argocd/bootstrap/previews
           cat ./app-meetup-argocd/bootstrap/template.txt | envsubst > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
           echo "[INFO] Preview env created"
-          echo "update=true" >> $GITHUB_OUTPUT
+          update=true
+        else
+          echo "[INFO] Preview env already existing"
         fi
-        if [ -f ./config.yaml ]; then
+        if [ -f ./config.yaml ]
+        then
           echo "[INFO] Additionnal configuration detected"
           old=$(md5sum ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
           echo "[INFO] New file generated"
           yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml
           yq eval-all -i '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml
           new=$(md5sum ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
-          if [ "$old" != "$new" ]; then
+          if [ "$old" != "$new" ]
+          then
             echo "[INFO] Configuration updated"
-            echo "update=true" >> $GITHUB_OUTPUT
+            update=true
           fi
+        else
+          echo "[INFO] Additonnal Config File not present"
+        fi
+        if [ "$update" = true ]
+        then
+          echo "update=true" >> $GITHUB_OUTPUT
+        else
+          echo "update=false" >> $GITHUB_OUTPUT
         fi
 
     - name: Update preview
