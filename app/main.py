@@ -19,7 +19,7 @@ if database_enable:
     if database_host == "":
         database_url = "sqlite:///test.db"
     else:
-        database_url = f"postgres://{database_username}:{database_password}@{database_host}:{database_port}/postgres"
+        database_url = f"postgresql://{database_username}:{database_password}@{database_host}:{database_port}/postgres"
     print(database_url)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     db.init_app(app)
