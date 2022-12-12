@@ -102,6 +102,8 @@ jobs:
             echo "[INFO] Configuration updated"
             update=true
           fi
+        else
+          echo "[INFO] Additonnal Config File not present"
         fi
         if [ "$update" = true ]
         then
