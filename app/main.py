@@ -12,7 +12,15 @@ app = Flask(__name__,
 database_enable = bool(os.environ.get('DATABASE_ENABLE', ""))
 
 if database_enable:
-    database_url = os.environ.get('DATABASE_URL', 'sqlite:///test.db')
+    database_username = os.environ.get('DATABASE_USERNAME', "")
+    database_password = os.environ.get('DATABASE_PASSWORD', "")
+    database_host = os.environ.get('DATABASE_HOST', "")
+    database_port = os.environ.get('DATABASE_PORT', "")
+    if database_host == "":
+        database_url = "sqlite:///test.db"
+    else:
+        database_url = f"postgres://{database_username}:{database_password}@{database_host}:{database_port}/postgres"
+    print(database_url)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     db.init_app(app)
     with app.app_context():
