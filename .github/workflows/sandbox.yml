@@ -86,6 +86,8 @@ jobs:
           cat ./app-meetup-argocd/bootstrap/template.txt | envsubst > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
           echo "[INFO] Preview env created"
           update=true
+        else
+          echo "[INFO] Preview env already existing"
         fi
         if [ -f ./config.yaml ]
         then
@@ -95,7 +97,8 @@ jobs:
           yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml
           yq eval-all -i '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml
           new=$(md5sum ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
-          if [ "$old" != "$new" ]; then
+          if [ "$old" != "$new" ]
+          then
             echo "[INFO] Configuration updated"
             update=true
           fi
