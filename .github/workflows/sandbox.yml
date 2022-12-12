@@ -92,7 +92,7 @@ jobs:
           yq eval-all '(select(fileIndex == 0) *+ select(fileIndex == 1))' ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml ./config.yaml > ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
           cat ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml
           new=$(md5sum ./app-meetup-argocd/bootstrap/previews/$PREVIEW.yaml)
-          if [ "$cat" != "$new" ]; then
+          if [ "$old" != "$new" ]; then
             echo "[INFO] Configuration updated"
             echo "update=true" >> $GITHUB_OUTPUT
           fi
